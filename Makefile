@@ -8,15 +8,21 @@ LIBS         = -lm
 # Where to outbut bin ary
 DESTDIR = ./
 # Name of final output
-TARGET  = main
+TARGET = main
+
+OBJDIR = build
 
 # generates athe list of all object files relating to cpp files in the directory
 # wildcard *.cpp = find all cpp files
 # $(patsubst %.cpp,%.o,...) replaces cpp with o
 SOURCES := $(wildcard src/*.cpp)
-OBJECTS := $(SOURCES:src/%.cpp=src/%.o)
+OBJECTS := $(SOURCES:src/%.cpp=$(OBJDIR)/%.o)
 
 all: $(DESTDIR)$(TARGET)
+
+# Make sure build/ exists
+$(OBJDIR):
+	mkdir -p $(OBJDIR)
 
 #  $(DESTDIR)$(TARGET) depends on all object files
 #  -Wall: Enables all common warnings
@@ -25,7 +31,7 @@ $(DESTDIR)$(TARGET): $(OBJECTS)
 	$(SYSCONF_LINK) -Wall $(LDFLAGS) -o $(DESTDIR)$(TARGET) $(OBJECTS) $(LIBS)
 
 #  e.g. g++ -Wall -c file1.cpp -o file1.o
-$(OBJECTS): %.o: %.cpp
+$(OBJDIR)/%.o: src/%.cpp | $(OBJDIR)
 	$(SYSCONF_LINK) -Wall $(CPPFLAGS) -c $(CFLAGS) $< -o $@
 
 clean:
