@@ -1,7 +1,7 @@
 # Variables
 # The compiler
 SYSCONF_LINK = g++
-CPPFLAGS     =
+CPPFLAGS     = -I./include
 LDFLAGS      =
 # External libraries, lm is a maths library
 LIBS         = -lm
@@ -13,7 +13,8 @@ TARGET  = main
 # generates athe list of all object files relating to cpp files in the directory
 # wildcard *.cpp = find all cpp files
 # $(patsubst %.cpp,%.o,...) replaces cpp with o
-OBJECTS := $(patsubst %.cpp,%.o,$(wildcard *.cpp))
+SOURCES := $(wildcard src/*.cpp)
+OBJECTS := $(SOURCES:src/%.cpp=src/%.o)
 
 all: $(DESTDIR)$(TARGET)
 
