@@ -2,7 +2,7 @@
 #include "tgaimage.h"
 
 // Line using Bresenhams line algo
-void lineFast(int x0, int y0, int x1, int y1, TGAImage &image, TGAColor color) {
+void line(int x0, int y0, int x1, int y1, TGAImage &image, TGAColor color) {
   bool steep = false;
   if (std::abs(x0 - x1) < std::abs(y0 - y1)) {
     std::swap(x0, y0);
@@ -32,7 +32,7 @@ void lineFast(int x0, int y0, int x1, int y1, TGAImage &image, TGAColor color) {
   }
 }
 
-void line(int x0, int y0, int x1, int y1, TGAImage &image, TGAColor color) {
+void lineSlow(int x0, int y0, int x1, int y1, TGAImage &image, TGAColor color) {
   bool steep = false;
   if (std::abs(x0 - x1) <
       std::abs(y0 - y1)) { // if the line is steep, we transpose the image
