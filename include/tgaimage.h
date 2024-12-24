@@ -3,20 +3,21 @@
 
 #include <fstream>
 
-#pragma pack(push, 1)
+#pragma pack(push, 1) // Line bytes up with 1 bit gap
 struct TGA_Header {
-  char idlength;
-  char colormaptype;
-  char datatypecode;
-  short colormaporigin;
-  short colormaplength;
-  char colormapdepth;
-  short x_origin;
-  short y_origin;
-  short width;
-  short height;
-  char bitsperpixel;
-  char imagedescriptor;
+  // https://en.wikipedia.org/wiki/Truevision_TGA#Header
+  char idlength;        // id length 1
+  char colormaptype;    // color map type 1
+  char datatypecode;    // image type 1
+  short colormaporigin; // color map spec 2
+  short colormaplength; // color map spec 2
+  char colormapdepth;   // color map spec 1 = 5 for color map spec
+  short x_origin;       // image spec 2
+  short y_origin;       // image spec 2
+  short width;          // image spec 2
+  short height;         // image spec 2
+  char bitsperpixel;    // image spec 1
+  char imagedescriptor; // image spec 1 = 10 for image spec
 };
 #pragma pack(pop)
 

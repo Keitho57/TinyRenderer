@@ -1,7 +1,7 @@
 # Variables
 # The compiler
 SYSCONF_LINK = g++
-CPPFLAGS     = -I./include
+CPPFLAGS     = -I./include -std=c++11
 LDFLAGS      =
 # External libraries, lm is a maths library
 LIBS         = -lm
@@ -36,5 +36,6 @@ $(OBJDIR)/%.o: src/%.cpp | $(OBJDIR)
 
 clean:
 	-rm -f $(OBJECTS)
-	-rm -f $(TARGET)
+	-rm -f $(DESTDIR)$(TARGET)
 	-rm -f *.tga
+	-rmdir $(OBJDIR)
