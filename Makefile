@@ -15,14 +15,15 @@ OBJDIR = build
 # generates athe list of all object files relating to cpp files in the directory
 # wildcard *.cpp = find all cpp files
 # $(patsubst %.cpp,%.o,...) replaces cpp with o
-SOURCES := $(wildcard src/*.cpp)
-OBJECTS := $(SOURCES:src/%.cpp=$(OBJDIR)/%.o)
+SOURCES := $(wildcard src/*.cpp utils/*.cpp)
+OBJECTS := $(patsubst %.cpp,$(OBJDIR)/%.o,$(SOURCES))
 
 all: $(DESTDIR)$(TARGET)
 
 # Make sure build/ exists
 $(OBJDIR):
-	mkdir -p $(OBJDIR)
+	mkdir -p $(OBJDIR)/src
+	mkdir -p $(OBJDIR)/utils
 
 #  $(DESTDIR)$(TARGET) depends on all object files
 #  -Wall: Enables all common warnings
@@ -31,11 +32,12 @@ $(DESTDIR)$(TARGET): $(OBJECTS)
 	$(SYSCONF_LINK) -Wall $(LDFLAGS) -o $(DESTDIR)$(TARGET) $(OBJECTS) $(LIBS)
 
 #  e.g. g++ -Wall -c file1.cpp -o file1.o
-$(OBJDIR)/%.o: src/%.cpp | $(OBJDIR)
+$(OBJDIR)/%.o: %.cpp | $(OBJDIR)
 	$(SYSCONF_LINK) -Wall $(CPPFLAGS) -c $(CFLAGS) $< -o $@
 
 clean:
 	-rm -f $(OBJECTS)
 	-rm -f $(DESTDIR)$(TARGET)
 	-rm -f *.tga
+	-rmdir $(OBJDIR)/src $(OBJDIR)/utils
 	-rmdir $(OBJDIR)
