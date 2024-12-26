@@ -15,19 +15,22 @@ void drawTriangleOutline(Triangle triangle, TGAImage &image, TGAColor color) {
   Vec2i midPoint = triangle.midPoint;
   Vec2i topPoint = triangle.topPoint;
 
-  line(bottomPoint, midPoint, image, purple);
-  line(midPoint, topPoint, image, purple);
-  line(topPoint, bottomPoint, image, purple);
+  line(bottomPoint, midPoint, image, color);
+  line(midPoint, topPoint, image, color);
+  line(topPoint, bottomPoint, image, color);
 };
 
+// Using scanline algo
 void drawTriangleFill(Triangle triangle, TGAImage &image, TGAColor color) {
   Vec2i bottomPoint = triangle.bottomPoint;
   Vec2i midPoint = triangle.midPoint;
   Vec2i topPoint = triangle.topPoint;
 
+  if (bottomPoint.y == midPoint.y && bottomPoint.y == topPoint.y)
+    return;
+
   int totalHeight = triangle.totalHeight;
-  int bottomHeight = triangle.bottomHeight + 1;
-  int topHeight = triangle.topHeight + 1;
+  int bottomHeight = triangle.bottomHeight;
 
   for (int y = 0; y < totalHeight; y++) {
     int isBottomHalf = y < bottomHeight;
