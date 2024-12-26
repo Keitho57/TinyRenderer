@@ -7,6 +7,8 @@ struct Triangle {
   int totalHeight;
   int bottomHeight;
   int topHeight;
+
+  int normal;
   union {
     struct {
       Vec2i bottomPoint, midPoint, topPoint;

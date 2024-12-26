@@ -4,12 +4,6 @@
 #include "line.h"
 #include <iostream>
 
-const TGAColor red = TGAColor(255, 0, 0, 255);
-const TGAColor green = TGAColor(0, 255, 0, 255);
-const TGAColor blue = TGAColor(0, 0, 255, 255);
-const TGAColor white = TGAColor(255, 255, 255, 255);
-const TGAColor purple = TGAColor(255, 0, 255, 255);
-
 void drawTriangleOutline(Triangle triangle, TGAImage &image, TGAColor color) {
   Vec2i bottomPoint = triangle.bottomPoint;
   Vec2i midPoint = triangle.midPoint;
