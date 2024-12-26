@@ -11,32 +11,34 @@ const TGAColor white = TGAColor(255, 255, 255, 255);
 const TGAColor purple = TGAColor(255, 0, 255, 255);
 
 void drawTriangleOutline(Triangle triangle, TGAImage &image, TGAColor color) {
-  Vec2i point1 = triangle.points[0];
-  Vec2i point2 = triangle.points[1];
-  Vec2i point3 = triangle.points[2];
+  Vec2i bottomPoint = triangle.bottomPoint;
+  Vec2i midPoint = triangle.midPoint;
+  Vec2i topPoint = triangle.topPoint;
 
-  // Point1 ends up as lowpoint, 2 is mid, 3 high
-  if (point1.y > point2.y)
-    std::swap(point1, point2);
-  if (point1.y > point3.y)
-    std::swap(point1, point3);
-  if (point2.y > point3.y)
-    std::swap(point2, point3);
-
-  int vDistFromBottomToTop = point3.y - point1.y;
-  int vDistFromBottomToMid = point2.y - point1.y + 1;
-
-  for (int y = point1.y; y <= point2.y; y++) {
-    Vec2i A = lerp(point1, point3, y, vDistFromBottomToTop);
-    Vec2i B = lerp(point1, point2, y, vDistFromBottomToMid);
-
-    line(A.x, y, B.x, y, image, white);
-
-    image.set(A.x, y, blue);
-    image.set(B.x, y, blue);
-  }
+  line(bottomPoint, midPoint, image, purple);
+  line(midPoint, topPoint, image, purple);
+  line(topPoint, bottomPoint, image, purple);
 };
 
 void drawTriangleFill(Triangle triangle, TGAImage &image, TGAColor color) {
-  drawTriangleOutline(triangle, image, color);
+  Vec2i bottomPoint = triangle.bottomPoint;
+  Vec2i midPoint = triangle.midPoint;
+  Vec2i topPoint = triangle.topPoint;
+
+  int totalHeight = triangle.totalHeight;
+  int bottomHeight = triangle.bottomHeight + 1;
+  int topHeight = triangle.topHeight + 1;
+
+  for (int y = 0; y < totalHeight; y++) {
+    int isBottomHalf = y < bottomHeight;
+
+    Vec2i A = lerp(bottomPoint, topPoint, y);
+    Vec2i B = isBottomHalf ? lerp(bottomPoint, midPoint, y)
+                           : lerp(midPoint, topPoint, y - bottomHeight);
+
+    if (A.x > B.x)
+      std::swap(A, B);
+
+    line(A.x, y + bottomPoint.y, B.x, y + bottomPoint.y, image, color);
+  }
 };
