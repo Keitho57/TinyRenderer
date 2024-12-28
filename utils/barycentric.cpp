@@ -1,6 +1,7 @@
 #include <geometry.h>
 
-Vec3f barycentric(Vec2i *pts, Vec2i P) {
+// the coordinates of point p as a ratio between sub traingle and whole triangle
+Vec3f getBarycentricCoords(Vec2i *pts, Vec2i P) {
   Vec3f u = Vec3f(pts[2].x - pts[0].x, pts[1].x - pts[0].x, pts[0].x - P.x) ^
             Vec3f(pts[2].y - pts[0].y, pts[1].y - pts[0].y, pts[0].y - P.y);
 

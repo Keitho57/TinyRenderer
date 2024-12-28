@@ -24,10 +24,20 @@ const int height = 800;
 int main(int argc, char **argv) {
   TGAImage scene(width, height, TGAImage::RGB);
 
-  Triangle t(Vec2i(100, 100), Vec2i(400, 700), Vec2i(700, 100));
-  Triangle t1(Vec2i(400, 110), Vec2i(550, 400), Vec2i(600, 150));
-  drawTriangleFillBarycentricCoords(t, scene, red);
-  drawTriangleFillBarycentricCoords(t1, scene, blue);
+  model = new Model(objPath);
+
+  for (int i = 0; i < model->nfaces(); i++) {
+    std::vector<int> face = model->face(i);
+    Vec2i screen_coords[3];
+    for (int j = 0; j < 3; j++) {
+      Vec3f world_coords = model->vert(face[j]);
+      screen_coords[j] = Vec2i((world_coords.x + 1.) * width / 2.,
+                               (world_coords.y + 1.) * height / 2.);
+    }
+    drawTriangleFillBarycentricCoords(
+        screen_coords, scene,
+        TGAColor(rand() % 255, rand() % 255, rand() % 255, 255));
+  }
 
   scene.flip_vertically();
   scene.write_tga_file("output.tga");

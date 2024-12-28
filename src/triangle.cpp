@@ -68,7 +68,7 @@ void drawTriangleFillBarycentricCoords(Triangle triangle, TGAImage &image,
   Vec2i P;
   for (P.x = boundingBoxMin.x; P.x <= boundingBoxMax.x; P.x++) {
     for (P.y = boundingBoxMin.y; P.y <= boundingBoxMax.y; P.y++) {
-      Vec3f barycentricCoords = barycentric(pts, P);
+      Vec3f barycentricCoords = getBarycentricCoords(pts, P);
       if (barycentricCoords.x < 0 || barycentricCoords.y < 0 ||
           barycentricCoords.z < 0)
         continue;
