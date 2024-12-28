@@ -23,18 +23,11 @@ const int height = 800;
 
 int main(int argc, char **argv) {
   TGAImage scene(width, height, TGAImage::RGB);
-  int ybuffer[width];
-  for (int i = 0; i < width; i++) {
-    ybuffer[i] = std::numeric_limits<int>::min();
-  }
 
-  // scene "2d mesh"
-  rasterize(Vec2i(20, 34), Vec2i(744, 400), scene, red, ybuffer);
-  rasterize(Vec2i(120, 434), Vec2i(444, 400), scene, green, ybuffer);
-  rasterize(Vec2i(330, 463), Vec2i(594, 200), scene, blue, ybuffer);
-
-  // screen line
-  rasterize(Vec2i(10, 10), Vec2i(790, 10), scene, white, ybuffer);
+  Triangle t(Vec2i(100, 100), Vec2i(400, 700), Vec2i(700, 100));
+  Triangle t1(Vec2i(400, 110), Vec2i(550, 400), Vec2i(600, 150));
+  drawTriangleFillBarycentricCoords(t, scene, red);
+  drawTriangleFillBarycentricCoords(t1, scene, blue);
 
   scene.flip_vertically();
   scene.write_tga_file("output.tga");

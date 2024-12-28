@@ -2,6 +2,7 @@
 #include "geometry.h"
 #include "lerp.h"
 #include "line.h"
+#include <barycentric.h>
 #include <iostream>
 
 void drawTriangleOutline(Triangle triangle, TGAImage &image, TGAColor color) {
@@ -15,7 +16,8 @@ void drawTriangleOutline(Triangle triangle, TGAImage &image, TGAColor color) {
 };
 
 // Using scanline algo
-void drawTriangleFill(Triangle triangle, TGAImage &image, TGAColor color) {
+void drawTriangleFillScanline(Triangle triangle, TGAImage &image,
+                              TGAColor color) {
   Vec2i bottomPoint = triangle.bottomPoint;
   Vec2i midPoint = triangle.midPoint;
   Vec2i topPoint = triangle.topPoint;
@@ -38,4 +40,39 @@ void drawTriangleFill(Triangle triangle, TGAImage &image, TGAColor color) {
 
     line(A.x, y + bottomPoint.y, B.x, y + bottomPoint.y, image, color);
   }
-};
+}
+
+// From that vid: to get m subtract x component of e1 from e1
+// to get the x component you say e1 dot e2 but since e2 isnt a unit vector
+// make it a unit vector by e2/length of e2,
+// since there would be 2 e2s in the calc its e2 norm squared
+// i.e e1 - ((e1 dot e2) * e2/(length of e2 squared))
+
+// Using barycentric coords algo
+void drawTriangleFillBarycentricCoords(Triangle triangle, TGAImage &image,
+                                       TGAColor color) {
+  Vec2i *pts = triangle.points;
+  Vec2i boundingBoxMin(image.get_width() - 1, image.get_height() - 1);
+  Vec2i boundingBoxMax(0, 0);
+  Vec2i clamp(image.get_width() - 1, image.get_height() - 1);
+
+  // get max x, y coords to draw bounding box
+  for (int i = 0; i < 3; i++) {
+    boundingBoxMin.x = std::max(0, std::min(boundingBoxMin.x, pts[i].x));
+    boundingBoxMin.y = std::max(0, std::min(boundingBoxMin.y, pts[i].y));
+
+    boundingBoxMax.x = std::min(clamp.x, std::max(boundingBoxMax.x, pts[i].x));
+    boundingBoxMax.y = std::min(clamp.y, std::max(boundingBoxMax.y, pts[i].y));
+  }
+
+  Vec2i P;
+  for (P.x = boundingBoxMin.x; P.x <= boundingBoxMax.x; P.x++) {
+    for (P.y = boundingBoxMin.y; P.y <= boundingBoxMax.y; P.y++) {
+      Vec3f barycentricCoords = barycentric(pts, P);
+      if (barycentricCoords.x < 0 || barycentricCoords.y < 0 ||
+          barycentricCoords.z < 0)
+        continue;
+      image.set(P.x, P.y, color);
+    }
+  }
+}

@@ -61,6 +61,10 @@ private:
 void drawTriangleOutline(Triangle trianglePoints, TGAImage &image,
                          TGAColor color);
 
-void drawTriangleFill(Triangle trianglePoints, TGAImage &image, TGAColor color);
+void drawTriangleFillScanline(Triangle trianglePoints, TGAImage &image,
+                              TGAColor color);
+
+void drawTriangleFillBarycentricCoords(Triangle triangle, TGAImage &image,
+                                       TGAColor color);
 
 #endif // __TRIANGLE_H__
