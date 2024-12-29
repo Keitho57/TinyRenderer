@@ -21,26 +21,48 @@ Model *model = NULL;
 const int width = 800;
 const int height = 800;
 
-int main(int argc, char **argv) {
-  TGAImage scene(width, height, TGAImage::RGB);
+Vec3f lightVector(0, 0, -1);
 
+//  convert x and y to screen width, height(same depth)
+Vec3f world2screen(Vec3f v) {
+  return Vec3f(int((v.x + 1.) * width / 2. + .5),
+               int((v.y + 1.) * height / 2. + .5), v.z);
+}
+
+int main(int argc, char **argv) {
+  TGAImage image(width, height, TGAImage::RGB);
   model = new Model(objPath);
+
+  // "Depth"
+  float *zBuffer = new float[width * height];
+  for (int i = 0; i < width * height; i++) {
+    zBuffer[i] = -std::numeric_limits<float>::max();
+  }
 
   for (int i = 0; i < model->nfaces(); i++) {
     std::vector<int> face = model->face(i);
-    Vec2i screen_coords[3];
+
+    Vec3f pts[3];
+    Vec3f worldCoords[3];
     for (int j = 0; j < 3; j++) {
-      Vec3f world_coords = model->vert(face[j]);
-      screen_coords[j] = Vec2i((world_coords.x + 1.) * width / 2.,
-                               (world_coords.y + 1.) * height / 2.);
+      Vec3f v = model->vert(face[j]);
+      pts[j] = world2screen(model->vert(face[j]));
+      worldCoords[j] = v;
     }
-    drawTriangleFillBarycentricCoords(
-        screen_coords, scene,
-        TGAColor(rand() % 255, rand() % 255, rand() % 255, 255));
+    float lumonosity = calculateLuminosity(worldCoords, lightVector);
+
+    if (lumonosity > 0) {
+      drawTriangleFillBarycentricCoords(
+          pts, zBuffer, image,
+          TGAColor(255 * lumonosity, 255 * lumonosity, 255 * lumonosity, 255));
+    }
   }
 
-  scene.flip_vertically();
-  scene.write_tga_file("output.tga");
+  image.flip_vertically(); // i want to have the origin at the left bottom
+                           // corner of the image
+
+  image.write_tga_file("output.tga");
+  delete model;
 
   return 0;
 }

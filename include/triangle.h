@@ -3,46 +3,44 @@
 #include "geometry.h"
 #include "line.h"
 
-struct Triangle {
-  int totalHeight;
-  int bottomHeight;
-  int topHeight;
+template <class t> struct Triangle {
+  t totalHeight;
+  t bottomHeight;
+  t topHeight;
 
-  int normal;
   union {
     struct {
-      Vec2i bottomPoint, midPoint, topPoint;
+      Vec2<t> bottomPoint, midPoint, topPoint;
     };
 
-    Vec2i points[3];
+    Vec2<t> points[3];
   };
 
   Triangle() {
     for (int i = 0; i < 3; ++i) {
-      points[i] = Vec2i();
+      points[i] = Vec2<t>();
     }
   }
 
-  Triangle(Vec2i _points[3]) { setPoints(_points[0], _points[1], _points[2]); }
+  Triangle(Vec2<t> _points[3]) {
+    setPoints(_points[0], _points[1], _points[2]);
+  }
 
-  Triangle(Vec2i point1, Vec2i point2, Vec2i point3) {
+  Triangle(Vec2<t> point1, Vec2<t> point2, Vec2<t> point3) {
     setPoints(point1, point2, point3);
   }
 
 private:
-  // Helper function to set points and compute heights
-  void setPoints(Vec2i point1, Vec2i point2, Vec2i point3) {
+  void setPoints(Vec2<t> point1, Vec2<t> point2, Vec2<t> point3) {
     points[0] = point1;
     points[1] = point2;
     points[2] = point3;
-
-    // Point 0 ends up as bottom point, 1 is mid, 2 high
     sortPoints();
-
     setHeights();
   }
 
   void sortPoints() {
+    // Point 0 ends up as bottom point, 1 is mid, 2 high
     if (bottomPoint.y > midPoint.y)
       std::swap(bottomPoint, midPoint);
     if (bottomPoint.y > topPoint.y)
@@ -58,13 +56,16 @@ private:
   }
 };
 
-void drawTriangleOutline(Triangle trianglePoints, TGAImage &image,
+typedef Triangle<float> Trianglef;
+typedef Triangle<int> Trianglei;
+
+void drawTriangleOutline(Trianglei trianglePoints, TGAImage &image,
                          TGAColor color);
 
-void drawTriangleFillScanline(Triangle trianglePoints, TGAImage &image,
+void drawTriangleFillScanline(Trianglei trianglePoints, TGAImage &image,
                               TGAColor color);
 
-void drawTriangleFillBarycentricCoords(Triangle triangle, TGAImage &image,
-                                       TGAColor color);
+void drawTriangleFillBarycentricCoords(Vec3f ptsOfTriangle[3], float zBuffer[],
+                                       TGAImage &image, TGAColor color);
 
 #endif // __TRIANGLE_H__
