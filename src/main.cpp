@@ -49,8 +49,8 @@ int main(int argc, char **argv) {
       pts[j] = world2screen(model->vert(face[j]));
       worldCoords[j] = v;
     }
-    float lumonosity = calculateLuminosity(worldCoords, lightVector);
 
+    float lumonosity = calculateLuminosity(worldCoords, lightVector);
     if (lumonosity > 0) {
       drawTriangleFillBarycentricCoords(
           pts, zBuffer, image,
