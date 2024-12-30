@@ -4,10 +4,10 @@
 #include "tgaimage.h"
 #include "triangle.h"
 
+#include "luminosity.h"
+#include "rasterize.h"
 #include <chrono>
 #include <iostream>
-#include <luminosity.h>
-#include <rasterize.h>
 
 const TGAColor white = TGAColor(255, 255, 255, 255);
 const TGAColor red = TGAColor(255, 0, 0, 255);
@@ -23,7 +23,7 @@ const int height = 800;
 
 Vec3f lightVector(0, 0, -1);
 
-//  convert x and y to screen width, height(same depth)
+// convert x and y to screen width, height(same depth)
 Vec3f world2screen(Vec3f v) {
   return Vec3f(int((v.x + 1.) * width / 2. + .5),
                int((v.y + 1.) * height / 2. + .5), v.z);
@@ -44,26 +44,30 @@ int main(int argc, char **argv) {
   }
 
   for (int i = 0; i < model->nTriangles(); i++) {
-    std::vector<int> triangles = model->getTriangle(i);
+    std::vector<int> triangleData = model->getTriangle(i);
 
-    Vec3f pts[3];
+    Vec3f ptsOfTriangle[3];
     Vec3f worldCoords[3];
+
     for (int j = 0; j < 3; j++) {
-      pts[j] = world2screen(model->getVertex(triangles[j]));
-      worldCoords[j] = model->getVertex(triangles[j]);
+      ptsOfTriangle[j] = world2screen(model->getVertex(triangleData[j]));
+      worldCoords[j] = model->getVertex(triangleData[j]);
     }
 
     float lumonosity = calculateLuminosity(worldCoords, lightVector);
+
     if (lumonosity > 0) {
+      // drawTriangleFillScanline(
+      //     pts, image,
+      //     TGAColor(255 * lumonosity, 255 * lumonosity, 255 * lumonosity,
+      //     255));
       drawTriangleFillBarycentricCoords(
-          pts, zBuffer, image,
+          ptsOfTriangle, zBuffer, image,
           TGAColor(255 * lumonosity, 255 * lumonosity, 255 * lumonosity, 255));
     }
   }
 
-  image.flip_vertically(); // i want to have the origin at the left bottom
-                           // corner of the image
-
+  image.flip_vertically(); // Bottom left origin
   image.write_tga_file("output.tga");
   delete model;
 

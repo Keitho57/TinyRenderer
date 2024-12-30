@@ -1,4 +1,5 @@
 #include "geometry.h"
+#include "triangle.h"
 
 // the coordinates of point p as a ratio between sub traingle and whole triangle
 Vec3f getBarycentricCoords(Vec2i *pts, Vec2i P) {
@@ -19,15 +20,27 @@ Vec3f crossProduct(const Vec3f &v1, const Vec3f &v2) {
 Vec3f getBarycentricCoords(Vec3f A, Vec3f B, Vec3f C, Vec3f P) {
   Vec3f s[2];
   for (int i = 2; i--;) {
-    s[i].x = C.raw[i] - A.raw[i];
-    s[i].y = B.raw[i] - A.raw[i];
-    s[i].z = A.raw[i] - P.raw[i];
+    s[i].x = C[i] - A[i];
+    s[i].y = B[i] - A[i];
+    s[i].z = A[i] - P[i];
   }
 
   Vec3f u = crossProduct(s[0], s[1]);
-  if (std::abs(u.z) > 1e-2) // dont forget that u[2] is integer. If it is zero
-                            // then triangle ABC is degenerate
+  if (std::abs(u.z) > 1e-2) // ABC is degenerate
     return Vec3f(1.f - (u.x + u.y) / u.z, u.y / u.z, u.x / u.z);
-  return Vec3f(-1, 1, 1); // in this case generate negative coordinates, it will
-                          // be thrown away by the rasterizator
+  return Vec3f(-1, 1, 1);
+}
+
+Vec3f getBarycentricCoords(Trianglef triangle, Vec3f P) {
+  Vec3f s[2];
+  for (int i = 2; i--;) {
+    s[i].x = triangle[2][i] - triangle[0][i];
+    s[i].y = triangle[1][i] - triangle[0][i];
+    s[i].z = triangle[0][i] - P[i];
+  }
+
+  Vec3f u = crossProduct(s[0], s[1]);
+  if (std::abs(u.z) > 1e-2)
+    return Vec3f(1.f - (u.x + u.y) / u.z, u.y / u.z, u.x / u.z);
+  return Vec3f(-1, 1, 1);
 }

@@ -5,11 +5,10 @@
 #include "line.h"
 #include <iostream>
 
-void drawTriangleOutline(Triangle2di triangle, TGAImage &image,
-                         TGAColor color) {
-  Vec2i bottomPoint = triangle.bottomPoint;
-  Vec2i midPoint = triangle.midPoint;
-  Vec2i topPoint = triangle.topPoint;
+void drawTriangleOutline(Trianglef triangle, TGAImage &image, TGAColor color) {
+  Vec2i bottomPoint = Vec2i(triangle.bottomPoint.x, triangle.bottomPoint.y);
+  Vec2i midPoint = Vec2i(triangle.midPoint.x, triangle.midPoint.y);
+  Vec2i topPoint = Vec2i(triangle.topPoint.x, triangle.topPoint.y);
 
   line(bottomPoint, midPoint, image, color);
   line(midPoint, topPoint, image, color);
@@ -17,12 +16,11 @@ void drawTriangleOutline(Triangle2di triangle, TGAImage &image,
 };
 
 // Using scanline algo
-void drawTriangleFillScanline(Triangle2di triangle, TGAImage &image,
+void drawTriangleFillScanline(Trianglef triangle, TGAImage &image,
                               TGAColor color) {
-  Vec2i bottomPoint = triangle.bottomPoint;
-  Vec2i midPoint = triangle.midPoint;
-  Vec2i topPoint = triangle.topPoint;
-
+  Vec2i bottomPoint = Vec2i(triangle.bottomPoint.x, triangle.bottomPoint.y);
+  Vec2i midPoint = Vec2i(triangle.midPoint.x, triangle.midPoint.y);
+  Vec2i topPoint = Vec2i(triangle.topPoint.x, triangle.topPoint.y);
   if (bottomPoint.y == midPoint.y && bottomPoint.y == topPoint.y)
     return;
 
@@ -43,14 +41,8 @@ void drawTriangleFillScanline(Triangle2di triangle, TGAImage &image,
   }
 }
 
-// From that vid: to get m subtract x component of e1 from e1
-// to get the x component you say e1 dot e2 but since e2 isnt a unit vector
-// make it a unit vector by e2/length of e2,
-// since there would be 2 e2s in the calc its e2 norm squared
-// i.e e1 - ((e1 dot e2) * e2/(length of e2 squared))
-
 // Using barycentric coords algo
-void drawTriangleFillBarycentricCoords(Triangle3df triangle, float *zBuffer,
+void drawTriangleFillBarycentricCoords(Trianglef triangle, float *zBuffer,
                                        TGAImage &image, TGAColor color) {
   Vec2f boundingBoxMin(image.get_width() - 1, image.get_height() - 1);
   Vec2f boundingBoxMax(0, 0);
@@ -72,8 +64,7 @@ void drawTriangleFillBarycentricCoords(Triangle3df triangle, float *zBuffer,
   Vec3f P;
   for (P.x = boundingBoxMin.x; P.x <= boundingBoxMax.x; P.x++) {
     for (P.y = boundingBoxMin.y; P.y <= boundingBoxMax.y; P.y++) {
-      Vec3f barycentricCoords = getBarycentricCoords(
-          triangle.points[0], triangle.points[1], triangle.points[2], P);
+      Vec3f barycentricCoords = getBarycentricCoords(triangle, P);
 
       // if point is outside triangle, skip
       if (barycentricCoords.x < 0 || barycentricCoords.y < 0 ||
@@ -82,8 +73,7 @@ void drawTriangleFillBarycentricCoords(Triangle3df triangle, float *zBuffer,
 
       P.z = 0;
       for (int i = 0; i < 3; i++)
-        P.z += triangle.points[i].z *
-               barycentricCoords.raw[i]; // interpolate depth
+        P.z += triangle[i].z * barycentricCoords[i]; // interpolate depth
 
       if (zBuffer[int(P.x + P.y * image.get_width())] < P.z) {
         zBuffer[int(P.x + P.y * image.get_width())] = P.z;
