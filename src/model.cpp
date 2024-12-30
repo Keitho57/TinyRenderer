@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 
-Model::Model(const char *filename) : verts_(), faces_(), uv_() {
+Model::Model(const char *filename) : vertexs_(), triangles_(), uvCoords_() {
   std::ifstream in;
   in.open(filename, std::ifstream::in);
   if (in.fail())
@@ -20,13 +20,13 @@ Model::Model(const char *filename) : verts_(), faces_(), uv_() {
       Vec3f v;
       for (int i = 0; i < 3; i++)
         iss >> v.raw[i];
-      verts_.push_back(v);
+      vertexs_.push_back(v);
     } else if (!line.compare(0, 3, "vt ")) {
       iss >> trash >> trash;
       Vec2f uvCoords;
       for (int i = 0; i < 2; i++)
         iss >> uvCoords[i];
-      uv_.push_back(uvCoords);
+      uvCoords_.push_back(uvCoords);
     } else if (!line.compare(0, 2, "f ")) {
       std::vector<Vec3i> f;
       Vec3i tmp;
@@ -36,30 +36,30 @@ Model::Model(const char *filename) : verts_(), faces_(), uv_() {
           tmp[i]--; // in wavefront obj all indices start at 1, not zero
         f.push_back(tmp);
       }
-      faces_.push_back(f);
+      triangles_.push_back(f);
     }
   }
-  std::cerr << "# v# " << verts_.size() << " f# " << faces_.size() << " uv# "
-            << uv_.size() << std::endl;
+  std::cerr << "# v# " << vertexs_.size() << " f# " << triangles_.size()
+            << " uv# " << uvCoords_.size() << std::endl;
 }
 
 Model::~Model() {}
 
-int Model::nverts() { return (int)verts_.size(); }
+int Model::nVertexs() { return (int)vertexs_.size(); }
 
-int Model::nfaces() { return (int)faces_.size(); }
+int Model::nTriangles() { return (int)triangles_.size(); }
 
-std::vector<int> Model::face(int idx) {
+std::vector<int> Model::getTriangle(int i) {
   std::vector<int> face;
-  for (int i = 0; i < (int)faces_[idx].size(); i++)
-    face.push_back(faces_[idx][i].raw[0]);
+  for (int j = 0; j < (int)triangles_[i].size(); j++)
+    face.push_back(triangles_[i][j][0]);
   return face;
 }
 
 Vec2f Model::getUvCoords(int index, int vertex) {
-  int uvIndex = faces_[index][vertex].raw[1];
-  Vec2f uvCoords = uv_[uvIndex];
+  int uvIndex = triangles_[index][vertex][1];
+  Vec2f uvCoords = uvCoords_[uvIndex];
   return uvCoords;
 }
 
-Vec3f Model::vert(int i) { return verts_[i]; }
+Vec3f Model::getVertex(int i) { return vertexs_[i]; }
