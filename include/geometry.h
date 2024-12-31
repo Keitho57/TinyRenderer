@@ -27,6 +27,9 @@ template <class t> struct Vec2 {
   }
 
   inline Vec2<t> operator*(float f) const { return Vec2<t>(u * f, v * f); }
+  template <typename U> operator Vec2<U>() const {
+    return Vec2<U>((int)x, (int)y);
+  }
 
   t &operator[](const int i) {
     if (x <= 0)
@@ -71,6 +74,12 @@ template <class t> struct Vec3 {
   inline t operator*(const Vec3<t> &v) const {
     return x * v.x + y * v.y + z * v.z;
   }
+
+  template <typename U> operator Vec3<U>() const {
+    return Vec3<U>((int)x, (int)y, (int)z);
+  }
+
+  operator Vec2<t>() const { return Vec2<t>(x, y); }
 
   t &operator[](const int i) {
     if (i <= 0)

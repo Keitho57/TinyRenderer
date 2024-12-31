@@ -24,7 +24,7 @@ const int height = 800;
 Vec3f lightVector(0, 0, -1);
 
 // convert x and y to screen width, height(same depth)
-Vec3f world2screen(Vec3f v) {
+Vec3f mapWorld2screen(Vec3f v) {
   return Vec3f(int((v.x + 1.) * width / 2. + .5),
                int((v.y + 1.) * height / 2. + .5), v.z);
 }
@@ -32,10 +32,6 @@ Vec3f world2screen(Vec3f v) {
 int main(int argc, char **argv) {
   TGAImage image(width, height, TGAImage::RGB);
   model = new Model(objPath);
-
-  // TGAImage texture = TGAImage();
-
-  // texture.read_tga_file("assets/african_head_diffuse.tga");
 
   // "Depth"
   float *zBuffer = new float[width * height];
@@ -47,23 +43,19 @@ int main(int argc, char **argv) {
     std::vector<int> triangleData = model->getTriangle(i);
 
     Vec3f ptsOfTriangle[3];
+    Vec2f uvPointsOfTriangle[3];
     Vec3f worldCoords[3];
 
     for (int j = 0; j < 3; j++) {
-      ptsOfTriangle[j] = world2screen(model->getVertex(triangleData[j]));
+      ptsOfTriangle[j] = mapWorld2screen(model->getVertex(triangleData[j]));
+      uvPointsOfTriangle[j] = model->getUvCoords(i, j);
       worldCoords[j] = model->getVertex(triangleData[j]);
     }
+    Trianglef t(ptsOfTriangle, uvPointsOfTriangle);
 
-    float lumonosity = calculateLuminosity(worldCoords, lightVector);
-
-    if (lumonosity > 0) {
-      // drawTriangleFillScanline(
-      //     pts, image,
-      //     TGAColor(255 * lumonosity, 255 * lumonosity, 255 * lumonosity,
-      //     255));
-      drawTriangleFillBarycentricCoords(
-          ptsOfTriangle, zBuffer, image,
-          TGAColor(255 * lumonosity, 255 * lumonosity, 255 * lumonosity, 255));
+    float intensity = calculateLuminosity(worldCoords, lightVector);
+    if (intensity > 0) {
+      drawTriangleFillScanline(t, zBuffer, intensity, image, model);
     }
   }
 

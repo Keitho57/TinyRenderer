@@ -1,5 +1,5 @@
-#include <geometry.h>
-#include <tgaimage.h>
+#include "geometry.h"
+#include "tgaimage.h"
 
 // map some point to a pixel on screen
 void rasterize(Vec2i p0, Vec2i p1, TGAImage &image, TGAColor color,

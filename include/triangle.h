@@ -1,18 +1,13 @@
 #ifndef __TRIANGLE_H__
 #define __TRIANGLE_H__
+
 #include "geometry.h"
 #include "line.h"
+#include "model.h"
 
 template <class t> struct Triangle {
-  t totalHeight;
-  t bottomHeight;
-  t topHeight;
-
+  Vec2f uvCoords[3];
   union {
-    struct {
-      Vec3<t> bottomPoint, midPoint, topPoint;
-    };
-
     struct {
       Vec3<t> p1, p2, p3;
     };
@@ -22,16 +17,14 @@ template <class t> struct Triangle {
 
   Triangle() {
     for (int i = 0; i < 3; ++i) {
-      points[i] = Vec2<t>();
+      points[i] = Vec3<t>();
+      uvCoords[i] = Vec2<t>();
     }
   }
 
-  Triangle(Vec3<t> _points[3]) {
+  Triangle(Vec3<t> _points[3], Vec2f _uvCoords[3]) {
     setPoints(_points[0], _points[1], _points[2]);
-  }
-
-  Triangle(Vec3<t> point1, Vec3<t> point2, Vec3<t> point3) {
-    setPoints(point1, point2, point3);
+    setCoords(_uvCoords[0], _uvCoords[1], _uvCoords[2]);
   }
 
   Vec3<t> &operator[](const int i) {
@@ -48,24 +41,12 @@ private:
     points[0] = point1;
     points[1] = point2;
     points[2] = point3;
-    sortPoints();
-    setHeights();
   }
 
-  void sortPoints() {
-    // Point 0 ends up as bottom point, 1 is mid, 2 high
-    if (bottomPoint.y > midPoint.y)
-      std::swap(bottomPoint, midPoint);
-    if (bottomPoint.y > topPoint.y)
-      std::swap(bottomPoint, topPoint);
-    if (midPoint.y > topPoint.y)
-      std::swap(midPoint, topPoint);
-  }
-
-  void setHeights() {
-    totalHeight = points[2].y - points[0].y;
-    bottomHeight = points[1].y - points[0].y;
-    topHeight = points[2].y - points[1].y;
+  void setCoords(Vec2f uvCoord1, Vec2f uvCoord2, Vec2f uvCoord3) {
+    uvCoords[0] = uvCoord1;
+    uvCoords[1] = uvCoord2;
+    uvCoords[2] = uvCoord3;
   }
 };
 
@@ -75,8 +56,8 @@ typedef Triangle<int> Trianglei;
 void drawTriangleOutline(Trianglef trianglePoints, TGAImage &image,
                          TGAColor color);
 
-void drawTriangleFillScanline(Trianglef trianglePoints, TGAImage &image,
-                              TGAColor color);
+void drawTriangleFillScanline(Trianglef triangle, float *zBuffer,
+                              float intensity, TGAImage &image, Model *model);
 
 void drawTriangleFillBarycentricCoords(Trianglef triangle, float *zBuffer,
                                        TGAImage &image, TGAColor color);

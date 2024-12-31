@@ -1,4 +1,5 @@
 #include "model.h"
+#include "tgaimage.h"
 #include <fstream>
 #include <iostream>
 #include <sstream>
@@ -41,6 +42,8 @@ Model::Model(const char *filename) : vertexs_(), triangles_(), uvCoords_() {
   }
   std::cerr << "# v# " << vertexs_.size() << " f# " << triangles_.size()
             << " uv# " << uvCoords_.size() << std::endl;
+
+  loadTexture(filename, "_diffuse.tga", diffusemap_);
 }
 
 Model::~Model() {}
@@ -59,7 +62,23 @@ std::vector<int> Model::getTriangle(int i) {
 Vec2f Model::getUvCoords(int index, int vertex) {
   int uvIndex = triangles_[index][vertex][1];
   Vec2f uvCoords = uvCoords_[uvIndex];
-  return uvCoords;
+  return Vec2i(uvCoords.x * diffusemap_.get_width(),
+               uvCoords.y * diffusemap_.get_height());
 }
 
 Vec3f Model::getVertex(int i) { return vertexs_[i]; }
+
+void Model::loadTexture(std::string filename, const char *suffix,
+                        TGAImage &img) {
+  std::string texfile(filename);
+  size_t dot = texfile.find_last_of(".");
+  if (dot != std::string::npos) {
+    texfile = texfile.substr(0, dot) + std::string(suffix);
+    std::cerr << "texture file " << texfile << " loading "
+              << (img.read_tga_file(texfile.c_str()) ? "ok" : "failed")
+              << std::endl;
+    img.flip_vertically();
+  }
+}
+
+TGAColor Model::diffuse(Vec2i uv) { return diffusemap_.get(uv.x, uv.y); }

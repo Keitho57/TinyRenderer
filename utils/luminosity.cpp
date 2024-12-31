@@ -1,4 +1,4 @@
-#include <triangle.h>
+#include "triangle.h"
 
 // Light intensity = triangle norm dot lightVector
 // dot = angle b/w represented as a number i.e. 1 = parallel, 0 = perp

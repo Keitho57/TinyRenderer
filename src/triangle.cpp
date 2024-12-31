@@ -1,14 +1,28 @@
 #include "triangle.h"
 #include "barycentric.h"
 #include "geometry.h"
-#include "lerp.h"
+
 #include "line.h"
+#include "model.h"
 #include <iostream>
 
 void drawTriangleOutline(Trianglef triangle, TGAImage &image, TGAColor color) {
-  Vec2i bottomPoint = Vec2i(triangle.bottomPoint.x, triangle.bottomPoint.y);
-  Vec2i midPoint = Vec2i(triangle.midPoint.x, triangle.midPoint.y);
-  Vec2i topPoint = Vec2i(triangle.topPoint.x, triangle.topPoint.y);
+  if (triangle[0].y == triangle[1].y && triangle[0].y == triangle[2].y)
+    return; // i dont care about degenerate triangles
+
+  if (triangle[0].y > triangle[1].y) {
+    std::swap(triangle[0], triangle[1]);
+  }
+  if (triangle[0].y > triangle[2].y) {
+    std::swap(triangle[0], triangle[2]);
+  }
+  if (triangle[1].y > triangle[2].y) {
+    std::swap(triangle[1], triangle[2]);
+  }
+
+  Vec2i bottomPoint = Vec2i(triangle.p1.x, triangle.p1.y);
+  Vec2i midPoint = Vec2i(triangle.p2.x, triangle.p2.y);
+  Vec2i topPoint = Vec2i(triangle.p3.x, triangle.p3.y);
 
   line(bottomPoint, midPoint, image, color);
   line(midPoint, topPoint, image, color);
@@ -16,28 +30,82 @@ void drawTriangleOutline(Trianglef triangle, TGAImage &image, TGAColor color) {
 };
 
 // Using scanline algo
-void drawTriangleFillScanline(Trianglef triangle, TGAImage &image,
-                              TGAColor color) {
-  Vec2i bottomPoint = Vec2i(triangle.bottomPoint.x, triangle.bottomPoint.y);
-  Vec2i midPoint = Vec2i(triangle.midPoint.x, triangle.midPoint.y);
-  Vec2i topPoint = Vec2i(triangle.topPoint.x, triangle.topPoint.y);
-  if (bottomPoint.y == midPoint.y && bottomPoint.y == topPoint.y)
-    return;
+void drawTriangleFillScanline(Trianglef triangle, float *zBuffer,
+                              float intensity, TGAImage &image, Model *model) {
 
-  int totalHeight = triangle.totalHeight;
-  int bottomHeight = triangle.bottomHeight;
+  Vec2f *uvCoords = triangle.uvCoords;
+
+  if (triangle[0].y == triangle[1].y && triangle[0].y == triangle[2].y)
+    return; // i dont care about degenerate triangles
+
+  if (triangle[0].y > triangle[1].y) {
+    std::swap(triangle[0], triangle[1]);
+    std::swap(uvCoords[0], uvCoords[1]);
+  }
+  if (triangle[0].y > triangle[2].y) {
+    std::swap(triangle[0], triangle[2]);
+    std::swap(uvCoords[0], uvCoords[2]);
+  }
+  if (triangle[1].y > triangle[2].y) {
+    std::swap(triangle[1], triangle[2]);
+    std::swap(uvCoords[1], uvCoords[2]);
+  }
+
+  int totalHeight = triangle[2].y - triangle[0].y;
+  int bottomHeight = triangle[1].y - triangle[0].y;
+  int topHeight = triangle[2].y - triangle[1].y;
+
+  Vec3f bottomPoint = triangle[0];
+  Vec3f midPoint = triangle[1];
+  Vec3f topPoint = triangle[2];
 
   for (int y = 0; y < totalHeight; y++) {
     int isBottomHalf = y < bottomHeight;
+    int segmentHeight = isBottomHalf ? bottomHeight : topHeight;
 
-    Vec2i A = lerp(bottomPoint, topPoint, y);
-    Vec2i B = isBottomHalf ? lerp(bottomPoint, midPoint, y)
-                           : lerp(midPoint, topPoint, y - bottomHeight);
+    float distanceAlongTotalHeight = (float)y / (topPoint.y - bottomPoint.y);
+    float distanceAlongSegmentHeight =
+        (float)(isBottomHalf ? y : y - bottomHeight) / segmentHeight;
 
-    if (A.x > B.x)
+    // point along total height line
+    Vec3f A = bottomPoint + (topPoint - bottomPoint) * distanceAlongTotalHeight;
+
+    // point along segment height line
+    Vec3f B = isBottomHalf ? bottomPoint + (midPoint - bottomPoint) *
+                                               distanceAlongSegmentHeight
+                           : midPoint + (topPoint - midPoint) *
+                                            distanceAlongSegmentHeight;
+
+    Vec2f uvA =
+        uvCoords[0] + (uvCoords[2] - uvCoords[0]) * distanceAlongTotalHeight;
+
+    Vec2f uvB = isBottomHalf ? uvCoords[0] + (uvCoords[1] - uvCoords[0]) *
+                                                 distanceAlongSegmentHeight
+                             : uvCoords[1] + (uvCoords[2] - uvCoords[1]) *
+                                                 distanceAlongSegmentHeight;
+
+    if (A.x > B.x) {
       std::swap(A, B);
+      std::swap(uvA, uvB);
+    }
 
-    line(A.x, y + bottomPoint.y, B.x, y + bottomPoint.y, image, color);
+    for (int x = A.x; x <= B.x; x++) {
+      float distanceAlongAtoB =
+          B.x == A.x ? 1. : (float)(x - A.x) / (B.x - A.x);
+
+      Vec3f C = A + (B - A) * distanceAlongAtoB;
+      Vec2f uvC = uvA + (uvB - uvA) * distanceAlongAtoB;
+
+      int idx = C.x + (C.y * image.get_width());
+
+      if (zBuffer[idx] < C.z) {
+        zBuffer[idx] = C.z;
+        TGAColor color = model->diffuse(uvC);
+        image.set(C.x, C.y,
+                  TGAColor(color.r * intensity, color.g * intensity,
+                           color.b * intensity));
+      }
+    }
   }
 }
 
