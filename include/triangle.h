@@ -53,13 +53,12 @@ private:
 typedef Triangle<float> Trianglef;
 typedef Triangle<int> Trianglei;
 
-void drawTriangleOutline(Trianglef trianglePoints, TGAImage &image,
-                         TGAColor color);
+void drawTriangleOutline(Trianglef trianglePoints, TGAColor color);
 
 void drawTriangleFillScanline(Trianglef triangle, float *zBuffer,
-                              float intensity, TGAImage &image, Model *model);
+                              float intensity);
 
 void drawTriangleFillBarycentricCoords(Trianglef triangle, float *zBuffer,
-                                       TGAImage &image, TGAColor color);
+                                       TGAColor color);
 
 #endif // __TRIANGLE_H__

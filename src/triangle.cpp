@@ -1,12 +1,13 @@
 #include "triangle.h"
 #include "barycentric.h"
 #include "geometry.h"
-
+#include "global.h"
 #include "line.h"
 #include "model.h"
+
 #include <iostream>
 
-void drawTriangleOutline(Trianglef triangle, TGAImage &image, TGAColor color) {
+void drawTriangleOutline(Trianglef triangle, TGAColor color) {
   if (triangle[0].y == triangle[1].y && triangle[0].y == triangle[2].y)
     return; // i dont care about degenerate triangles
 
@@ -24,15 +25,14 @@ void drawTriangleOutline(Trianglef triangle, TGAImage &image, TGAColor color) {
   Vec2i midPoint = Vec2i(triangle.p2.x, triangle.p2.y);
   Vec2i topPoint = Vec2i(triangle.p3.x, triangle.p3.y);
 
-  line(bottomPoint, midPoint, image, color);
-  line(midPoint, topPoint, image, color);
-  line(topPoint, bottomPoint, image, color);
+  line(bottomPoint, midPoint, color);
+  line(midPoint, topPoint, color);
+  line(topPoint, bottomPoint, color);
 };
 
 // Using scanline algo
 void drawTriangleFillScanline(Trianglef triangle, float *zBuffer,
-                              float intensity, TGAImage &image, Model *model) {
-
+                              float intensity) {
   Vec2f *uvCoords = triangle.uvCoords;
 
   if (triangle[0].y == triangle[1].y && triangle[0].y == triangle[2].y)
@@ -96,14 +96,14 @@ void drawTriangleFillScanline(Trianglef triangle, float *zBuffer,
       Vec3f C = A + (B - A) * distanceAlongAtoB;
       Vec2f uvC = uvA + (uvB - uvA) * distanceAlongAtoB;
 
-      int idx = C.x + (C.y * image.get_width());
+      int idx = C.x + (C.y * image->get_width());
 
       if (zBuffer[idx] < C.z) {
         zBuffer[idx] = C.z;
         TGAColor color = model->diffuse(uvC);
-        image.set(C.x, C.y,
-                  TGAColor(color.r * intensity, color.g * intensity,
-                           color.b * intensity));
+        image->set(C.x, C.y,
+                   TGAColor(color.r * intensity, color.g * intensity,
+                            color.b * intensity));
       }
     }
   }
@@ -111,10 +111,10 @@ void drawTriangleFillScanline(Trianglef triangle, float *zBuffer,
 
 // Using barycentric coords algo
 void drawTriangleFillBarycentricCoords(Trianglef triangle, float *zBuffer,
-                                       TGAImage &image, TGAColor color) {
-  Vec2f boundingBoxMin(image.get_width() - 1, image.get_height() - 1);
+                                       TGAColor color) {
+  Vec2f boundingBoxMin(image->get_width() - 1, image->get_height() - 1);
   Vec2f boundingBoxMax(0, 0);
-  Vec2f clamp(image.get_width() - 1, image.get_height() - 1);
+  Vec2f clamp(image->get_width() - 1, image->get_height() - 1);
 
   // get max x, y coords to draw bounding box
   for (int i = 0; i < 3; i++) {
@@ -143,9 +143,9 @@ void drawTriangleFillBarycentricCoords(Trianglef triangle, float *zBuffer,
       for (int i = 0; i < 3; i++)
         P.z += triangle[i].z * barycentricCoords[i]; // interpolate depth
 
-      if (zBuffer[int(P.x + P.y * image.get_width())] < P.z) {
-        zBuffer[int(P.x + P.y * image.get_width())] = P.z;
-        image.set(P.x, P.y, color);
+      if (zBuffer[int(P.x + P.y * image->get_width())] < P.z) {
+        zBuffer[int(P.x + P.y * image->get_width())] = P.z;
+        image->set(P.x, P.y, color);
       }
     }
   }

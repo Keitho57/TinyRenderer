@@ -1,11 +1,12 @@
 #include "geometry.h"
+#include "global.h"
 #include "line.h"
+#include "luminosity.h"
 #include "model.h"
+#include "rasterize.h"
 #include "tgaimage.h"
 #include "triangle.h"
 
-#include "luminosity.h"
-#include "rasterize.h"
 #include <chrono>
 #include <iostream>
 
@@ -16,12 +17,13 @@ const TGAColor blue = TGAColor(0, 0, 255, 255);
 
 const char *objPath = "assets/african_head.obj";
 
-Model *model = NULL;
-
 const int width = 800;
 const int height = 800;
 
 Vec3f lightVector(0, 0, -1);
+
+TGAImage *image = nullptr;
+Model *model = nullptr;
 
 // convert x and y to screen width, height(same depth)
 Vec3f mapWorld2screen(Vec3f v) {
@@ -30,7 +32,7 @@ Vec3f mapWorld2screen(Vec3f v) {
 }
 
 int main(int argc, char **argv) {
-  TGAImage image(width, height, TGAImage::RGB);
+  image = new TGAImage(width, height, TGAImage::RGB);
   model = new Model(objPath);
 
   // "Depth"
@@ -55,12 +57,12 @@ int main(int argc, char **argv) {
 
     float intensity = calculateLuminosity(worldCoords, lightVector);
     if (intensity > 0) {
-      drawTriangleFillScanline(t, zBuffer, intensity, image, model);
+      drawTriangleFillScanline(t, zBuffer, intensity);
     }
   }
 
-  image.flip_vertically(); // Bottom left origin
-  image.write_tga_file("output.tga");
+  image->flip_vertically(); // Bottom left origin
+  image->write_tga_file("output.tga");
   delete model;
 
   return 0;
