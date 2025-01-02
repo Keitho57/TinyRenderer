@@ -20,7 +20,7 @@ Model::Model(const char *filename) : vertexs_(), triangles_(), uvCoords_() {
       iss >> trash; // Trash "v "
       Vec3f v;
       for (int i = 0; i < 3; i++)
-        iss >> v.raw[i];
+        iss >> v[i];
       vertexs_.push_back(v);
     } else if (!line.compare(0, 3, "vt ")) {
       iss >> trash >> trash;

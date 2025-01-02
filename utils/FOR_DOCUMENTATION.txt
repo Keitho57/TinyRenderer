@@ -1,0 +1,84 @@
+this file contains code for reating ghrids and drawing vectors
+
+float ONE_UNIT = 100.f;
+Vec3f ORIGIN = Vec3f(width / 2, height / 2, 0);
+
+TGAColor gray(TGAColor(255 / 5, 255 / 5, 255 / 5));
+TGAColor purple(TGAColor(255, 0, 255));
+
+void buildGraph() {
+  Vec2i yAxis(ORIGIN.x, ORIGIN.y - height / 2);
+  Vec2i xAxis(ORIGIN.x - width / 2, ORIGIN.y);
+
+  // Vertical lines
+  for (int pointInX = ORIGIN.x - (width / 2); pointInX < width;
+       pointInX += ONE_UNIT) {
+    line(Vec2i(pointInX, 0), Vec2i(pointInX, height), gray);
+  }
+
+  // Horizontal lines
+  for (int pointInY = ORIGIN.y - (width / 2); pointInY < height;
+       pointInY += ONE_UNIT) {
+    line(Vec2i(0, pointInY), Vec2i(width, pointInY), gray);
+  }
+
+  Vec2i startYAxis = Vec2i(ORIGIN.x, ORIGIN.y - ORIGIN.y);
+  Vec2i endYAxis = Vec2i(ORIGIN.x, ORIGIN.y + ORIGIN.y);
+
+  Vec2i startXAxis = Vec2i(ORIGIN.x - ORIGIN.x, ORIGIN.y);
+  Vec2i endXAxis = Vec2i(ORIGIN.x + ORIGIN.x, ORIGIN.y);
+
+  // X axis line
+  line(startXAxis, endXAxis, white);
+  // Y axis line
+  line(startYAxis, endYAxis, white);
+}
+
+Vec3f scaleVector(Vec3f v) { return (v * ONE_UNIT) + ORIGIN; }
+
+Vec3f convert3dTo2dPosition(Vec3i v) {
+  int c = 5;
+  int tM[4][4] = {{1, 0, 0, 0}, {0, 1, 0, 0}, {0, 0, 1, 0}, {0, 0, -1 / c, 1}};
+
+  Vec3f vAtO = Vec3f(
+      ((v.x * tM[0][0]) + (v.y * tM[1][0]) + (v.z * tM[2][0])) / (1 - v.z / c),
+      ((v.x * tM[0][1]) + (v.y * tM[1][1]) + (v.z * tM[2][1])) / (1 - v.z / c),
+      ((v.x * tM[0][2]) + (v.y * tM[1][2]) + (v.z * tM[2][2])) / (1 - v.z / c));
+
+  return vAtO;
+}
+
+int main(int argc, char **argv) {
+  image = new TGAImage(width, height, TGAImage::RGB);
+
+  buildGraph();
+
+  Vec2f iBasis(ORIGIN.x + ONE_UNIT, ORIGIN.y);
+  Vec2f jBasis(ORIGIN.x, ORIGIN.y + ONE_UNIT);
+
+  line(ORIGIN, iBasis, green);
+  line(ORIGIN, jBasis, red);
+
+  Vec2f p1 = scaleVector(convert3dTo2dPosition(Vec3f(2, 2, -5)));
+  Vec2f p2 = scaleVector(convert3dTo2dPosition(Vec3f(2, 4, -5)));
+
+  Vec2f p3 = scaleVector(convert3dTo2dPosition(Vec3f(4, 4, -2)));
+  Vec2f p4 = scaleVector(convert3dTo2dPosition(Vec3f(4, 2, -2)));
+
+  // Vec2f a = iBasis;
+  // Vec2f b = jBasis;
+
+  // line(ORIGIN, a, blue);
+  // line(ORIGIN, b, purple);
+
+  line(p1, p2, red);
+  line(p2, p3, green);
+  line(p3, p4, blue);
+  line(p4, p1, purple);
+
+  image->flip_vertically(); // Bottom left origin
+  image->write_tga_file("output.tga");
+  delete model;
+
+  return 0;
+}

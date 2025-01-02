@@ -7,13 +7,7 @@
 
 template <class t> struct Triangle {
   Vec2f uvCoords[3];
-  union {
-    struct {
-      Vec3<t> p1, p2, p3;
-    };
-
-    Vec3<t> points[3];
-  };
+  Vec3<t> points[3];
 
   Triangle() {
     for (int i = 0; i < 3; ++i) {
@@ -29,11 +23,11 @@ template <class t> struct Triangle {
 
   Vec3<t> &operator[](const int i) {
     if (i <= 0)
-      return p1;
+      return points[0];
     else if (i == 1)
-      return p2;
+      return points[1];
     else
-      return p3;
+      return points[2];
   }
 
 private:
@@ -55,8 +49,8 @@ typedef Triangle<int> Trianglei;
 
 void drawTriangleOutline(Trianglef trianglePoints, TGAColor color);
 
-void drawTriangleFillScanline(Trianglef triangle, float *zBuffer,
-                              float intensity);
+void drawTriangleFillScanline(Trianglei triangle, float *zBuffer,
+                              float luminosity);
 
 void drawTriangleFillBarycentricCoords(Trianglef triangle, float *zBuffer,
                                        TGAColor color);

@@ -2,7 +2,9 @@
 #include "global.h"
 #include "line.h"
 #include "luminosity.h"
+#include "matrix.h"
 #include "model.h"
+#include "perspective.h"
 #include "rasterize.h"
 #include "tgaimage.h"
 #include "triangle.h"
@@ -17,23 +19,24 @@ const TGAColor blue = TGAColor(0, 0, 255, 255);
 
 const char *objPath = "assets/african_head.obj";
 
-const int width = 800;
-const int height = 800;
+int width;
+int height;
+int depth;
 
-Vec3f lightVector(0, 0, -1);
-
+Vec3f *lightVector = nullptr;
+Vec3f *camera = nullptr;
 TGAImage *image = nullptr;
 Model *model = nullptr;
 
-// convert x and y to screen width, height(same depth)
-Vec3f mapWorld2screen(Vec3f v) {
-  return Vec3f(int((v.x + 1.) * width / 2. + .5),
-               int((v.y + 1.) * height / 2. + .5), v.z);
-}
-
 int main(int argc, char **argv) {
+  width = 800;
+  height = 800;
+  depth = 100;
+
   image = new TGAImage(width, height, TGAImage::RGB);
   model = new Model(objPath);
+  lightVector = new Vec3f(0, 0, -1);
+  camera = new Vec3f(0, 0, 3);
 
   // "Depth"
   float *zBuffer = new float[width * height];
@@ -44,20 +47,21 @@ int main(int argc, char **argv) {
   for (int i = 0; i < model->nTriangles(); i++) {
     std::vector<int> triangleData = model->getTriangle(i);
 
-    Vec3f ptsOfTriangle[3];
     Vec2f uvPointsOfTriangle[3];
     Vec3f worldCoords[3];
+    Vec3i screenCoords[3];
 
     for (int j = 0; j < 3; j++) {
-      ptsOfTriangle[j] = mapWorld2screen(model->getVertex(triangleData[j]));
       uvPointsOfTriangle[j] = model->getUvCoords(i, j);
       worldCoords[j] = model->getVertex(triangleData[j]);
+      Vec3f v = convertPointToPerspective(model->getVertex(triangleData[j]));
+      screenCoords[j] = v;
     }
-    Trianglef t(ptsOfTriangle, uvPointsOfTriangle);
 
-    float intensity = calculateLuminosity(worldCoords, lightVector);
-    if (intensity > 0) {
-      drawTriangleFillScanline(t, zBuffer, intensity);
+    float luminosity = calculateLuminosity(worldCoords);
+    if (luminosity > 0) {
+      drawTriangleFillScanline(Trianglei(screenCoords, uvPointsOfTriangle),
+                               zBuffer, luminosity);
     }
   }
 

@@ -21,9 +21,9 @@ void drawTriangleOutline(Trianglef triangle, TGAColor color) {
     std::swap(triangle[1], triangle[2]);
   }
 
-  Vec2i bottomPoint = Vec2i(triangle.p1.x, triangle.p1.y);
-  Vec2i midPoint = Vec2i(triangle.p2.x, triangle.p2.y);
-  Vec2i topPoint = Vec2i(triangle.p3.x, triangle.p3.y);
+  Vec2i bottomPoint = Vec2i(triangle[0].x, triangle[0].y);
+  Vec2i midPoint = Vec2i(triangle[1].x, triangle[1].y);
+  Vec2i topPoint = Vec2i(triangle[2].x, triangle[2].y);
 
   line(bottomPoint, midPoint, color);
   line(midPoint, topPoint, color);
@@ -31,8 +31,8 @@ void drawTriangleOutline(Trianglef triangle, TGAColor color) {
 };
 
 // Using scanline algo
-void drawTriangleFillScanline(Trianglef triangle, float *zBuffer,
-                              float intensity) {
+void drawTriangleFillScanline(Trianglei triangle, float *zBuffer,
+                              float luminosity) {
   Vec2f *uvCoords = triangle.uvCoords;
 
   if (triangle[0].y == triangle[1].y && triangle[0].y == triangle[2].y)
@@ -102,8 +102,8 @@ void drawTriangleFillScanline(Trianglef triangle, float *zBuffer,
         zBuffer[idx] = C.z;
         TGAColor color = model->diffuse(uvC);
         image->set(C.x, C.y,
-                   TGAColor(color.r * intensity, color.g * intensity,
-                            color.b * intensity));
+                   TGAColor(color.r * luminosity, color.g * luminosity,
+                            color.b * luminosity));
       }
     }
   }

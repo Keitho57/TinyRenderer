@@ -3,6 +3,6 @@
 
 #include "triangle.h"
 
-float calculateLuminosity(Vec3f triangle[3], Vec3f lightVector);
+float calculateLuminosity(Vec3f triangle[3]);
 
 #endif //__LUMINOSITY_H__
