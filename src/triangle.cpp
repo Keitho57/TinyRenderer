@@ -31,8 +31,7 @@ void drawTriangleOutline(Trianglef triangle, TGAColor color) {
 };
 
 // Using scanline algo
-void drawTriangleFillScanline(Trianglei triangle, float *zBuffer,
-                              float luminosity) {
+void drawTriangleFillScanline(Trianglei triangle, float *zBuffer) {
   Vec2f *uvCoords = triangle.uvCoords;
   Vec3f *vertexNormals = triangle.vertexNormals;
 
@@ -42,14 +41,17 @@ void drawTriangleFillScanline(Trianglei triangle, float *zBuffer,
   if (triangle[0].y > triangle[1].y) {
     std::swap(triangle[0], triangle[1]);
     std::swap(uvCoords[0], uvCoords[1]);
+    std::swap(vertexNormals[0], vertexNormals[1]);
   }
   if (triangle[0].y > triangle[2].y) {
     std::swap(triangle[0], triangle[2]);
     std::swap(uvCoords[0], uvCoords[2]);
+    std::swap(vertexNormals[0], vertexNormals[2]);
   }
   if (triangle[1].y > triangle[2].y) {
     std::swap(triangle[1], triangle[2]);
     std::swap(uvCoords[1], uvCoords[2]);
+    std::swap(vertexNormals[1], vertexNormals[2]);
   }
 
   int totalHeight = triangle[2].y - triangle[0].y;
@@ -59,6 +61,10 @@ void drawTriangleFillScanline(Trianglei triangle, float *zBuffer,
   Vec3f bottomPoint = triangle[0];
   Vec3f midPoint = triangle[1];
   Vec3f topPoint = triangle[2];
+
+  float luminosityAtBottomPoint = vertexNormals[0] * (*lightVector);
+  float luminosityAtMiddlePoint = vertexNormals[1] * (*lightVector);
+  float luminosityAtTopPoint = vertexNormals[2] * (*lightVector);
 
   for (int y = 0; y < totalHeight; y++) {
     int isBottomHalf = y < bottomHeight;
@@ -85,9 +91,22 @@ void drawTriangleFillScanline(Trianglei triangle, float *zBuffer,
                              : uvCoords[1] + (uvCoords[2] - uvCoords[1]) *
                                                  distanceAlongSegmentHeight;
 
+    float iA = luminosityAtBottomPoint +
+               (luminosityAtTopPoint - luminosityAtBottomPoint) *
+                   distanceAlongTotalHeight;
+
+    float iB = isBottomHalf
+                   ? luminosityAtBottomPoint +
+                         (luminosityAtMiddlePoint - luminosityAtBottomPoint) *
+                             distanceAlongSegmentHeight
+                   : luminosityAtMiddlePoint +
+                         (luminosityAtTopPoint - luminosityAtMiddlePoint) *
+                             distanceAlongSegmentHeight;
+
     if (A.x > B.x) {
       std::swap(A, B);
       std::swap(uvA, uvB);
+      std::swap(iA, iB);
     }
 
     for (int x = A.x; x <= B.x; x++) {
@@ -96,15 +115,14 @@ void drawTriangleFillScanline(Trianglei triangle, float *zBuffer,
 
       Vec3f C = A + (B - A) * distanceAlongAtoB;
       Vec2f uvC = uvA + (uvB - uvA) * distanceAlongAtoB;
+      float iC = iA + (iB - iA) * distanceAlongAtoB;
 
       int idx = C.x + (C.y * image->get_width());
 
       if (zBuffer[idx] < C.z) {
         zBuffer[idx] = C.z;
         TGAColor color = model->diffuse(uvC);
-        image->set(
-            C.x, C.y,
-            TGAColor(255 * luminosity, 255 * luminosity, 255 * luminosity));
+        image->set(C.x, C.y, TGAColor(255, 255, 255) * iC);
       }
     }
   }

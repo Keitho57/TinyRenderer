@@ -47,6 +47,10 @@ struct TGAColor {
     }
   }
 
+  TGAColor operator*(const float c) const {
+    return TGAColor(r * c, g * c, b * c, a * c);
+  };
+
   TGAColor &operator=(const TGAColor &c) {
     if (this != &c) {
       bytespp = c.bytespp;

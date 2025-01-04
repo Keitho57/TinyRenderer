@@ -59,8 +59,7 @@ typedef Triangle<int> Trianglei;
 
 void drawTriangleOutline(Trianglef trianglePoints, TGAColor color);
 
-void drawTriangleFillScanline(Trianglei triangle, float *zBuffer,
-                              float luminosity);
+void drawTriangleFillScanline(Trianglei triangle, float *zBuffer);
 
 void drawTriangleFillBarycentricCoords(Trianglef triangle, float *zBuffer,
                                        TGAColor color);

@@ -35,8 +35,9 @@ int main(int argc, char **argv) {
 
   image = new TGAImage(width, height, TGAImage::RGB);
   model = new Model(objPath);
-  lightVector = new Vec3f(0, 0, -1);
   camera = new Vec3f(0, 0, 3);
+  lightVector = new Vec3f(1, 1, 1);
+  lightVector->normalize();
 
   // "Depth"
   float *zBuffer = new float[width * height];
@@ -60,13 +61,8 @@ int main(int argc, char **argv) {
       vertexNormals[j] = model->getVertexNormal(i, j);
     }
 
-    float luminosity = calculateLuminosity(worldCoords);
-
-    if (luminosity > 0) {
-      drawTriangleFillScanline(
-          Trianglei(screenCoords, uvPointsOfTriangle, vertexNormals), zBuffer,
-          luminosity);
-    }
+    drawTriangleFillScanline(
+        Trianglei(screenCoords, uvPointsOfTriangle, vertexNormals), zBuffer);
   }
 
   image->flip_vertically(); // Bottom left origin
