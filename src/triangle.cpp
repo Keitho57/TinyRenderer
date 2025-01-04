@@ -34,6 +34,7 @@ void drawTriangleOutline(Trianglef triangle, TGAColor color) {
 void drawTriangleFillScanline(Trianglei triangle, float *zBuffer,
                               float luminosity) {
   Vec2f *uvCoords = triangle.uvCoords;
+  Vec3f *vertexNormals = triangle.vertexNormals;
 
   if (triangle[0].y == triangle[1].y && triangle[0].y == triangle[2].y)
     return; // i dont care about degenerate triangles
@@ -101,9 +102,9 @@ void drawTriangleFillScanline(Trianglei triangle, float *zBuffer,
       if (zBuffer[idx] < C.z) {
         zBuffer[idx] = C.z;
         TGAColor color = model->diffuse(uvC);
-        image->set(C.x, C.y,
-                   TGAColor(color.r * luminosity, color.g * luminosity,
-                            color.b * luminosity));
+        image->set(
+            C.x, C.y,
+            TGAColor(255 * luminosity, 255 * luminosity, 255 * luminosity));
       }
     }
   }

@@ -7,18 +7,21 @@
 
 template <class t> struct Triangle {
   Vec2f uvCoords[3];
+  Vec3f vertexNormals[3];
   Vec3<t> points[3];
 
   Triangle() {
     for (int i = 0; i < 3; ++i) {
       points[i] = Vec3<t>();
-      uvCoords[i] = Vec2<t>();
+      uvCoords[i] = Vec2f();
+      vertexNormals[i] = Vec3f();
     }
   }
 
-  Triangle(Vec3<t> _points[3], Vec2f _uvCoords[3]) {
+  Triangle(Vec3<t> _points[3], Vec2f _uvCoords[3], Vec3f _vertexNormals[3]) {
     setPoints(_points[0], _points[1], _points[2]);
     setCoords(_uvCoords[0], _uvCoords[1], _uvCoords[2]);
+    setNormals(_vertexNormals[0], _vertexNormals[1], _vertexNormals[2]);
   }
 
   Vec3<t> &operator[](const int i) {
@@ -41,6 +44,13 @@ private:
     uvCoords[0] = uvCoord1;
     uvCoords[1] = uvCoord2;
     uvCoords[2] = uvCoord3;
+  }
+
+  void setNormals(Vec3f vertexNormal1, Vec3f vertexNormal2,
+                  Vec3f vertexNormal3) {
+    vertexNormals[0] = vertexNormal1;
+    vertexNormals[1] = vertexNormal2;
+    vertexNormals[2] = vertexNormal3;
   }
 };
 

@@ -50,18 +50,22 @@ int main(int argc, char **argv) {
     Vec2f uvPointsOfTriangle[3];
     Vec3f worldCoords[3];
     Vec3i screenCoords[3];
+    Vec3f vertexNormals[3];
 
     for (int j = 0; j < 3; j++) {
       uvPointsOfTriangle[j] = model->getUvCoords(i, j);
       worldCoords[j] = model->getVertex(triangleData[j]);
-      Vec3f v = convertPointToPerspective(model->getVertex(triangleData[j]));
-      screenCoords[j] = v;
+      screenCoords[j] =
+          convertPointToPerspective(model->getVertex(triangleData[j]));
+      vertexNormals[j] = model->getVertexNormal(i, j);
     }
 
     float luminosity = calculateLuminosity(worldCoords);
+
     if (luminosity > 0) {
-      drawTriangleFillScanline(Trianglei(screenCoords, uvPointsOfTriangle),
-                               zBuffer, luminosity);
+      drawTriangleFillScanline(
+          Trianglei(screenCoords, uvPointsOfTriangle, vertexNormals), zBuffer,
+          luminosity);
     }
   }
 

@@ -6,7 +6,8 @@
 #include <string>
 #include <vector>
 
-Model::Model(const char *filename) : vertexs_(), triangles_(), uvCoords_() {
+Model::Model(const char *filename)
+    : vertexs_(), triangles_(), uvCoords_(), vertexNormals_() {
   std::ifstream in;
   in.open(filename, std::ifstream::in);
   if (in.fail())
@@ -22,6 +23,12 @@ Model::Model(const char *filename) : vertexs_(), triangles_(), uvCoords_() {
       for (int i = 0; i < 3; i++)
         iss >> v[i];
       vertexs_.push_back(v);
+    } else if (!line.compare(0, 3, "vn ")) {
+      iss >> trash >> trash;
+      Vec3f vertexNormal;
+      for (int i = 0; i < 3; i++)
+        iss >> vertexNormal[i];
+      vertexNormals_.push_back(vertexNormal);
     } else if (!line.compare(0, 3, "vt ")) {
       iss >> trash >> trash;
       Vec2f uvCoords;
@@ -67,6 +74,13 @@ Vec2f Model::getUvCoords(int index, int vertex) {
 }
 
 Vec3f Model::getVertex(int i) { return vertexs_[i]; }
+
+Vec3f Model::getVertexNormal(int index, int vertex) {
+  int vertexNormalIndex = triangles_[index][vertex][2];
+  Vec3f vertexNormal = vertexNormals_[vertexNormalIndex];
+
+  return vertexNormal;
+}
 
 void Model::loadTexture(std::string filename, const char *suffix,
                         TGAImage &img) {

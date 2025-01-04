@@ -10,6 +10,7 @@ private:
   std::vector<Vec3f> vertexs_;
   std::vector<std::vector<Vec3i>> triangles_;
   std::vector<Vec2f> uvCoords_;
+  std::vector<Vec3f> vertexNormals_;
   TGAImage diffusemap_;
   void loadTexture(std::string filename, const char *suffix, TGAImage &img);
 
@@ -21,6 +22,7 @@ public:
   Vec3f getVertex(int i);
   std::vector<int> getTriangle(int idx);
   Vec2f getUvCoords(int index, int vertex);
+  Vec3f getVertexNormal(int index, int vertex);
   TGAColor diffuse(Vec2i uv);
 };
 
