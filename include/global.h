@@ -10,6 +10,8 @@ extern TGAImage *image;
 
 extern Vec3f *lightVector;
 extern Vec3f *camera;
+extern Vec3f eye;
+extern Vec3f center;
 
 extern int width;
 extern int height;

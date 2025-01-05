@@ -1,6 +1,21 @@
 #include "matrix.h"
 #include <geometry.h>
 #include <global.h>
+#include <iostream>
+
+Matrix lookat(Vec3f eye, Vec3f center, Vec3f up) {
+  Vec3f z = (eye - center).normalize();
+  Vec3f x = (up ^ z).normalize();
+  Vec3f y = (z ^ x).normalize();
+  Matrix res = Matrix::identity(4);
+  for (int i = 0; i < 3; i++) {
+    res[0][i] = x[i];
+    res[1][i] = y[i];
+    res[2][i] = z[i];
+    res[i][3] = -center[i];
+  }
+  return res;
+}
 
 Vec3f mapPointTo3D(Matrix m) {
   //  divide by z
@@ -32,20 +47,29 @@ Matrix createClippingSpace(int x, int y, int w, int h) {
 
 Vec3i convertPointToPerspective(Vec3f p) {
   // 1. Convert to homogeneous [ createHomogeneousCoord ]
-  // 2. map the coord to the clipping space [ mapPointToClippingSpace ]
-  // 3. map point to screen [ clippingSpace ]
-  // 4. convert back to 3d [ m2v ]
+  // 2. translate it to camera coordinates [ modelView ]
+  // 3. map the coord to the clipping space [ mapPointToClippingSpace ]
+  // 4. map point to screen [ clippingSpace ]
+  // 5. convert back to 3d [ mapPointTo3D ]
+
+  Matrix modelView = lookat(eye, center, Vec3f(0, 1, 0));
 
   // Applies a projection transformation to map the point into clip space
+  // (Projection)
   Matrix mapPointToClippingSpace = Matrix::identity(4);
+  mapPointToClippingSpace[3][2] = -1.f / (eye - center).norm();
 
-  // create the clipping space
+  // create the clipping space (ViewPort)
   Matrix clippingSpace =
       createClippingSpace(width / 8, height / 8, width * 3 / 4, height * 3 / 4);
 
-  // Scale the point into the clipping plane
-  mapPointToClippingSpace[3][2] = -1.f / camera->z;
+  std::cerr << modelView << std::endl;
+  std::cerr << mapPointToClippingSpace << std::endl;
+  std::cerr << clippingSpace << std::endl;
+  Matrix z = (clippingSpace * mapPointToClippingSpace * modelView);
+  std::cerr << z << std::endl;
+  std::cout << "---------------\n";
 
-  return mapPointTo3D(clippingSpace * mapPointToClippingSpace *
+  return mapPointTo3D(clippingSpace * mapPointToClippingSpace * modelView *
                       createHomogeneousCoord(p));
 }

@@ -9,7 +9,6 @@
 #include "tgaimage.h"
 #include "triangle.h"
 
-#include <chrono>
 #include <iostream>
 
 const TGAColor white = TGAColor(255, 255, 255, 255);
@@ -25,19 +24,22 @@ int depth;
 
 Vec3f *lightVector = nullptr;
 Vec3f *camera = nullptr;
+Vec3f eye;
+Vec3f center;
 TGAImage *image = nullptr;
 Model *model = nullptr;
 
 int main(int argc, char **argv) {
   width = 800;
   height = 800;
-  depth = 100;
+  depth = 255;
 
   image = new TGAImage(width, height, TGAImage::RGB);
   model = new Model(objPath);
+  eye = Vec3f(1, 1, 3);
+  center = Vec3f(0, 0, 0);
   camera = new Vec3f(0, 0, 3);
-  lightVector = new Vec3f(1, 1, 1);
-  lightVector->normalize();
+  lightVector = &(new Vec3f(1, 1, 1))->normalize();
 
   // "Depth"
   float *zBuffer = new float[width * height];
